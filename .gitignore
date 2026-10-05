@@ -1,0 +1,18 @@
+# .NET build output
+**/bin/
+**/obj/
+
+# Visual Studio / VS Code user state
+.vs/
+.vscode/
+*.user
+*.suo
+
+# Tool runtime artifacts
+*.wukong-runner-backup
+wukong-benchmark-*.json
+parsed-result.json
+
+# OS files
+Thumbs.db
+.DS_Store
