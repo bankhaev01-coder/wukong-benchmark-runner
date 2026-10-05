@@ -13,7 +13,8 @@ public sealed class BenchmarkResultParser
         var file = roots.Where(Directory.Exists)
             .SelectMany(root => Directory.EnumerateFiles(root, "*.*", SearchOption.AllDirectories))
             .Where(path => Extensions.Contains(Path.GetExtension(path), StringComparer.OrdinalIgnoreCase))
-            .Where(path => File.GetLastWriteTimeUtc(path) >= startedAt.UtcDateTime.AddSeconds(-5))
+            .Where(path => startedAt == DateTimeOffset.MinValue
+                || File.GetLastWriteTimeUtc(path) >= startedAt.UtcDateTime.AddSeconds(-5))
             .OrderByDescending(File.GetLastWriteTimeUtc)
             .FirstOrDefault();
         if (file is null) return new(null, null, null, null, null, ["Файл результата после запуска не найден."]);
@@ -30,7 +31,10 @@ public sealed class BenchmarkResultParser
 
     private static double? Read(string text, string label)
     {
-        var match = Regex.Match(text, $"(?:{label})[^0-9]{{0,24}}([0-9]+(?:[.,][0-9]+)?)", RegexOptions.IgnoreCase);
+        var match = Regex.Match(
+            text,
+            $"(?<![A-Za-z])(?:{label})(?:\\s+fps)?[^:=]{{0,40}}[:=]\\s*([-+]?[0-9]+(?:[.,][0-9]+)?)",
+            RegexOptions.IgnoreCase);
         return double.TryParse(match.Groups[1].Value.Replace(',', '.'), NumberStyles.Float, CultureInfo.InvariantCulture, out var value) ? value : null;
     }
 }

@@ -37,6 +37,19 @@ public sealed class BenchmarkResultParserTests
         Assert.Contains("Файл результата после запуска не найден.", actual.Warnings);
     }
 
+    [TestMethod]
+    public void Parse_DoesNotUseUnrelatedNumberBetweenMetricNameAndValue()
+    {
+        using var fixture = new TemporaryDirectory();
+        var resultPath = Path.Combine(fixture.Path, "result.txt");
+        File.WriteAllText(resultPath, "Average FPS (pass 2): 73.5\nMinimum FPS: 49.25");
+
+        var actual = new BenchmarkResultParser().Parse([fixture.Path], DateTimeOffset.MinValue);
+
+        Assert.AreEqual(73.5, actual.AverageFps);
+        Assert.AreEqual(49.25, actual.MinimumFps);
+    }
+
     private sealed class TemporaryDirectory : IDisposable
     {
         public TemporaryDirectory()
